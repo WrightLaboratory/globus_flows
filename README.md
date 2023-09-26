@@ -8,7 +8,7 @@ It will require the following:
 * [Globus Python SDK v3](https://globus-sdk-python.readthedocs.io/en/stable/)
 * An existing Globus collection to which you have access
 * [Globus Connect Personal](https://www.globus.org/globus-connect-personal)
-
+* A Globus Native App registration
 
 ## Install `pyenv` and Python Build Dependencies
 
@@ -123,6 +123,25 @@ git switch -c dev origin/dev
 ```
 
 ## Running Code
+
+## Creating a Globus Native App
+
+A Globus Native App is a service principal that can be authenticated and authorized by the Globus identity platform to use the Globus REST APIs under specific scopes.
+
+To create one, visit the [Globus Developer Pages](https://developers.globus.org/).
+Select [Manage and Register Applications](https://app.globus.org/settings/developers).
+You may be asked to authenticate with your Globus ID or your institution's identity provider federated with Globus.
+You will then be asked to consent to additional privileges required by the web portal to create a native app.
+
+Select [Register a thick client or script that will be installed or run by users on their devices](https://app.globus.org/settings/developers/registration/public_installed_client).
+Register your service account to an existing project or create a new one.
+Associating the service account with a project will aid in keeping track of this identity.
+Create an easily identifiable name such as **{{ Institution }}-{{ Project }}-Automation**.
+
+You may leave the rest of the options at their default values.
+
+Take note of the **Client UUID** value.
+It will used by the scripts in this repository.
 
 ### Create New Python Virtual Environment
 
