@@ -223,6 +223,11 @@ https://auth.globus.org/v2/oauth2/authorize?client_id=< client_uuid >&redirect_u
 Please enter the code here: 
 ```
 
+Copy the URL into your browser.
+Create a custom label for the consent.
+Allow the native app client the **Manage Flows** scope.
+Paste the authorization code returned by the web page.
+
 Since we do not have any flows deployed, we should expect the following output:
 
 ```bash
@@ -309,11 +314,44 @@ python settings.py -e ~/.config/globus/flow/.flow.yaml
 `manage_flow.py` and `transfer_flow.py` will load these settings upon launch.
 You also may override the settings in `~/.config/globus/flow/.flow.yaml` with any of the `export` commands in the previous sections.
 
-### Initialize Watcher
+### Triggerring File Transfer Flow
+
+The `trigger_transfer_flow.py` script uses the `watchdog` package to monitor the file path on the source endpoint (in this case, the Globus Connect Personal client) for changes in `GLOBUS_SRC_BASEPATH`.
+
+The `watch.py` script may be modified to change how file system events or file types are handled.
+In this example, the creation of a new `*.txt` file will trigger an immediate transfer from the source endpoint to the destination endpoint.
+The creation of a `*.dat` file will sleep for 5 minutes before triggering the flow.
+This assumes that a `*.dat` file is a file created by an instrument process.
+The 5 minute delay accounts for final write processes.
+[A better implementation could be to check the file mode.
+If the file is still in `append` mode, sleep for 5 seconds.
+Once the file is closed, the event should trigger.]
 
 ```bash
-mkdir -p "${HOME}/instrument_data"
-python ./trigger_transfer_flow.py --watchdir "${HOME}/instrument_data"
+# Create the 'instrument_data' folder
+mkdir -p "${GLOBUS_SRC_BASEPATH}"
+
+chmod +x ./trigger_transfer_flow.py
+./trigger_transfer_flow.py
+```
+
+You will be presented with another login URL.
+
+```bash
+Please go to this URL and login:
+
+https://auth.globus.org/v2/oauth2/authorize?client_id=< client_uuid >&redirect_uri=https%3A%2F%2Fauth.globus.org%2Fv2%2Fweb%2Fauth-code&scope=https%3A%2F%2Fauth.globus.org%2Fscopes%2< scopes_uuid >%2Fmanage_flows&state=_default&response_type=code&code_challenge=< code_challenge>&code_challenge_method=S256&access_type=offline
+
+Please enter the code here: 
+```
+
+In order to execute the flow on your behalf, the native app client must request additional scopes to start and manage the "Transfer Flow Demo" flow.
+
+Once authorized, the script will continue to monitor the `GLOBUS_SRC_BASEPATH` directory
+
+```bash
+{"message": "Watcher Started\n", "logger": "watch", "level": "info", "timestamp": "2023-09-26T15:36:33Z"}
+{"message": "Monitoring: ~/instrument_data/\n", "logger": "watch", "level": "info", "timestamp": "2023-09-26T15:36:33Z"}
 ```
 
 ### Simulate Data Acquisition
@@ -322,7 +360,9 @@ Open another terminal.
 Create a new data file.
 
 ```bash
-tee "${HOME}/instrument_data/$(date +%s).txt"<<'EOF'
+export GLOBUS_SRC_BASEPATH=~/instrument_data
+
+tee "${GLOBUS_SRC_BASEPATH}/$(date +%s).txt"<<'EOF'
 "x","y"
 0,0
 1,1
@@ -330,3 +370,24 @@ tee "${HOME}/instrument_data/$(date +%s).txt"<<'EOF'
 3,9
 EOF
 ```
+
+Back in the terminal session running `trigger_transfer_flow.py`
+
+You should see the log entries similar to those below in standard out:
+
+```bash
+{"message": "File created: 1695743343.txt", "logger": "watch", "level": "info", "timestamp": "2023-09-26T15:49:03Z"}
+{"message": "File ends with .txt", "logger": "watch", "level": "info", "timestamp": "2023-09-26T15:49:03Z"}
+{"message": "Starting flow...", "logger": "watch", "level": "info", "timestamp": "2023-09-26T15:49:03Z"}
+{"message": "Transferring: instrument_data", "logger": "watch", "level": "info", "timestamp": "2023-09-26T15:49:03Z"}
+{"message": "https://app.globus.org/runs/04ef56d0-6f7b-4060-846f-800d5e3c4c42", "logger": "watch", "level": "info", "timestamp": "2023-09-26T15:49:03Z"}
+```
+
+You may stop monitoring by entering [⌃ control] + C at the keyboard.
+
+```bash
+^C{"message": "Watcher stopped.", "logger": "watch", "level": "info", "timestamp": "2023-09-26T15:53:44Z"}
+```
+
+[N.B., the completion of the file transfer flow will not be returned.
+A possible modification would be to create a polling loop to determine the state of the asynchronous flow execution.]
