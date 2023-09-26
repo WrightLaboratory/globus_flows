@@ -114,7 +114,7 @@ N.B., alternatively, you may install the `pipx` package into the Python virtual 
 ## Fetch File Transfer Code
 
 ```bash
-git clone git@github.com:WrightLaboratory/dt5202_DataTransfer.git
+git clone git@github.com:WrightLaboratory/globus_flows.git
 
 git fetch origin
 
@@ -128,7 +128,7 @@ git switch -c dev origin/dev
 
 ```bash
 
-cd dt5202_DataTransfer
+cd globus_flows
 
 # Build Install Python 3.x.x
 pyenv install $(cat ./.python-version)
