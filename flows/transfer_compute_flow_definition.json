@@ -1,0 +1,40 @@
+{
+  "States": {
+    "RunTasks": {
+      "End": true,
+      "Type": "Action",
+      "Comment": "Execute python scripts",
+      "WaitTime": 180,
+      "ActionUrl": "https://compute.actions.globus.org",
+      "Parameters": {
+        "kwargs.$": "$.input.compute_function_kwargs",
+        "endpoint.$": "$.input.compute_endpoint_id",
+        "function.$": "$.input.compute_function_id"
+      },
+      "ResultPath": "$.RunResult"
+    },
+    "TransferFiles": {
+      "Next": "RunTasks",
+      "Type": "Action",
+      "Comment": "Transfer files",
+      "WaitTime": 600,
+      "ActionUrl": "https://actions.automate.globus.org/transfer/transfer",
+      "Parameters": {
+        "sync_level.$": "$.input.sync_level",
+        "transfer_items": [
+          {
+            "recursive.$": "$.input.recursive_tx",
+            "source_path.$": "$.input.source.path",
+            "destination_path.$": "$.input.destination.path"
+          }
+        ],
+        "verify_checksum.$": "$.input.verify_checksum",
+        "source_endpoint_id.$": "$.input.source.id",
+        "destination_endpoint_id.$": "$.input.destination.id"
+      },
+      "ResultPath": "$.TransferFiles"
+    }
+  },
+  "Comment": "Transfer and process files by invoking a Globus Compute function",
+  "StartAt": "TransferFiles"
+}

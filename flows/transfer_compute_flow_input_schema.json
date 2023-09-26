@@ -1,0 +1,103 @@
+{
+  "type": "object",
+  "required": [],
+  "properties": {
+    "source": {
+      "type": "object",
+      "title": "Select source collection and path",
+      "format": "globus-collection",
+      "required": [
+        "id",
+        "path"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "path": {
+          "type": "string"
+        }
+      },
+      "description": "The source collection and path (path MUST end with a slash)",
+      "propertyOrder": [
+        "id",
+        "path"
+      ],
+      "additionalProperties": false
+    },
+    "sync_level": {
+      "type": "integer",
+      "title": "Sync Level",
+      "default": 0,
+      "description": "Whether or not to transfer a file"
+    },
+    "destination": {
+      "type": "object",
+      "title": "Select destination collection and path",
+      "format": "globus-collection",
+      "required": [
+        "id",
+        "path"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "path": {
+          "type": "string"
+        }
+      },
+      "description": "The destination collection and path (path MUST end with a slash); default collection is 'Globus Tutorials on ALCF Eagle'",
+      "propertyOrder": [
+        "id",
+        "path"
+      ],
+      "additionalProperties": false
+    },
+    "recursive_tx": {
+      "type": "boolean",
+      "title": "Recursive transfer",
+      "default": true,
+      "description": "Whether or not to transfer recursively, must be true when transferring a directory."
+    },
+    "verify_checksum": {
+      "type": "boolean",
+      "title": "Verify file integrity",
+      "description": "Verify file integrity after transfer with MD5 checksum"
+    },
+    "compute_endpoint_id": {
+      "type": "string",
+      "title": "Globus Compute Endpoint ID",
+      "format": "uuid",
+      "description": "The UUID of the Globus Compute endpoint where the function will run",
+      "additionalProperties": false
+    },
+    "compute_function_id": {
+      "type": "string",
+      "title": "Globus Compute Function ID",
+      "format": "uuid",
+      "description": "The UUID of the function to invoke; must be registered with the Globus Compute service",
+      "additionalProperties": false
+    },
+    "compute_function_kwargs": {
+      "type": "object",
+      "title": "Function Inputs",
+      "description": "Inputs to pass to the function",
+      "properties": {},
+      "additionalProperties": true
+    }
+  },
+  "propertyOrder": [
+    "compute_endpoint_id",
+    "compute_function_id",
+    "compute_function_kwargs",
+    "recursive_tx",
+    "sync_level",
+    "verify_checksum",
+    "source",
+    "destination"
+  ],
+  "additionalProperties": true
+}

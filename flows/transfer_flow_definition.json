@@ -1,0 +1,27 @@
+{
+  "States": {
+    "TransferFiles": {
+      "End": true,
+      "Type": "Action",
+      "Comment": "Transfer files",
+      "WaitTime": 600,
+      "ActionUrl": "https://actions.automate.globus.org/transfer/transfer",
+      "Parameters": {
+        "sync_level.$": "$.input.sync_level",
+        "transfer_items": [
+          {
+            "recursive.$": "$.input.recursive_tx",
+            "source_path.$": "$.input.source.path",
+            "destination_path.$": "$.input.destination.path"
+          }
+        ],
+        "verify_checksum.$": "$.input.verify_checksum",
+        "source_endpoint_id.$": "$.input.source.id",
+        "destination_endpoint_id.$": "$.input.destination.id"
+      },
+      "ResultPath": "$.TransferFiles"
+    }
+  },
+  "Comment": "Transfer and process files by invoking a Globus Compute function",
+  "StartAt": "TransferFiles"
+}

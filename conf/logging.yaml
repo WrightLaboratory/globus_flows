@@ -1,0 +1,26 @@
+---
+version: 1
+disable_existing_loggers: true
+
+root:
+    level: INFO
+    handlers: [console, file]
+
+formatters:
+    simple:
+        format: "%(asctime)s %(name)s - %(levelname)s:%(message)s"
+    json:
+        class: "pythonjsonlogger.jsonlogger.JsonFormatter"
+        format: "%(message)s"
+
+handlers:
+    console:
+        formatter: json
+        class: logging.StreamHandler
+        stream: "ext://sys.stdout"
+    file:
+        formatter: json
+        class: logging.FileHandler
+        filename: "~/.config/local/state/globus/logs/native_app.log"
+        mode: a
+...

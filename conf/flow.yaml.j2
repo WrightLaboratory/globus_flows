@@ -1,0 +1,33 @@
+---
+# Configuration file for Globus Transfer flow
+
+# Globus Client ID registered to app
+subscription:
+    id: {{ subscription_id }}
+
+native_app:
+    name: {{ client_name }}
+    id: {{ client_id }}
+
+token_store: {{ token_store }}
+
+# Globus Flow
+flow:
+    id: {{ flow_id }}
+    label: 
+    scope: 
+    tags:
+        - Trigger_Tutorial
+
+    input:
+        # transfer_files parameter values
+        source:
+            id: {{ source_endpoint_id }}
+            path: {{ source_base_path }}
+        destination:
+            id: {{ destination_endpoint_id }}
+            path: {{ destination_base_path }}
+        recursive_tx: false
+        sync_level: 0
+        verify_checksum: true
+...
