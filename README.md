@@ -332,7 +332,7 @@ Once the file is closed, the event should trigger.]
 mkdir -p "${GLOBUS_SRC_BASEPATH}"
 
 chmod +x ./trigger_transfer_flow.py
-./trigger_transfer_flow.py
+./trigger_transfer_flow.py --extensions '.txt' '.jpeg' '.jpg' '.dat'
 ```
 
 You will be presented with another login URL.
