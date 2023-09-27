@@ -6,13 +6,27 @@ import yaml
 from datetime import datetime
 
 import os
+import psutil
 import sys
 import time
 
 from watchdog.events import FileSystemEventHandler
+from watchdog.events import EVENT_TYPE_CREATED, EVENT_TYPE_MODIFIED, EVENT_TYPE_DELETED
 from watchdog.observers import Observer
 
 from settings import LOGGER
+
+
+def has_handle(fpath):
+    for proc in psutil.process_iter():
+        try:
+            for item in proc.open_files():
+                if fpath == item.path:
+                    return True
+        except Exception:
+            pass
+    return False
+
 
 class FileTrigger:
     def __init__(self, watch_dir, patterns, FlowRunner=None):
@@ -61,22 +75,31 @@ class Handler(FileSystemEventHandler):
     # You can edit it to trigger at file creation, modification or deletion,
     # and have different behaviors for each.
     def on_any_event(self, event):
-        if event.event_type == "created":
-            if event.is_directory:
+        if (evt := event).is_directory:
+            return None
+        else:
+            if evt.event_type == EVENT_TYPE_CREATED:
+                source = evt.src_path
+                LOGGER.info(f"File created: {os.path.basename(source)}")
+                for pattern in self.patterns:
+                    if source.endswith(pattern):
+                        LOGGER.info(f"File ends with {pattern}")
+                        while has_handle(source):
+                            # Block action until file is closed
+                            LOGGER.info(f"Waiting for file {os.path.basename(source)}")
+                            time.sleep(5)
+                        LOGGER.info("Starting flow...")
+                        self.logic_function(source)
+                return None
+            elif evt.event_type == EVENT_TYPE_MODIFIED:
+                LOGGER.debug("Event type not implemented")
+                return None
+            elif evt.event_type == EVENT_TYPE_DELETED:
+                LOGGER.debug("Event type not implemented")
                 return None
             else:
-                LOGGER.info(f"File created: {os.path.basename(event.src_path)}")
-                if event.src_path.endswith(".txt"):
-                    LOGGER.info(f"File ends with .txt")
-                    LOGGER.info("Starting flow...")
-                    self.logic_function(event.src_path)
-                    return None
-                if event.src_path.endswith(".dat"):
-                    LOGGER.info(f"File ends with .dat") 
-                    time.sleep(600) # wait for run to finish, change this value for your run time 
-                    LOGGER.info("Starting flow...")
-                    self.logic_function(event.src_path)
-                    return None     
+                LOGGER.debug("Event type not implemented")
+                return None
 
 
 def translate_local_path_to_globus_path(local_path: str) -> str:
