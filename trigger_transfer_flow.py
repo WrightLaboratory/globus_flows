@@ -104,11 +104,11 @@ def parse_args():
         help=f"Directory path to watch. [default: current directory]",
     )
     parser.add_argument(
-        "--patterns",
+        "--extensions",
         type=str,
         default="",
         nargs="*",
-        help='Filename suffix pattern(s) that will trigger the flow. [default: ""]',
+        help='Filename extension(s) that will trigger the flow. [default: ""]',
     )
     parser.set_defaults(verbose=True)
     return parser.parse_args()
@@ -129,6 +129,6 @@ if __name__ == "__main__":
             scopes=flow_scope, file_adapter=file_adapter))
     
     trigger = FileTrigger(
-        watch_dir=os.path.expanduser(args.watchdir), patterns=args.patterns, FlowRunner=run_flow,)
+        watch_dir=os.path.expanduser(args.watchdir), patterns=args.extensions, FlowRunner=run_flow,)
     trigger.run()
 
