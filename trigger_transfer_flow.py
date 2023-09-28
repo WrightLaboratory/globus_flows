@@ -72,6 +72,9 @@ def run_flow(event_file):
     # Convert Windows path separators to forward slashes.
     destination_path = destination_path.replace("\\", "/")
 
+    LOGGER.info(f"source_path: {source_path}")
+    LOGGER.info(f"destination_path: {destination_path}")
+
     # Modify initial values read from configuration with watchdog event paths
     # These modified values are not cached in `~/.config/globs/flow/.flow.yaml` configuration file
     GLOBUS_CONFIG['flow']['input']['source']['path'] = source_path
