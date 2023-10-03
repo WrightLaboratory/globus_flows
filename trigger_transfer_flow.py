@@ -56,7 +56,7 @@ def run_flow(event_file):
 
     # source_id = GLOBUS_CONFIG['flow']['input']['source']['id']
     # destination_id = GLOBUS_CONFIG['flow']['input']['destination']['id']
-    destination_base_path = '/' if (p := GLOBUS_CONFIG['flow']['input']['destination']['path']) is None else p
+    destination_base_path = f"/{FLOW_ID.split('-')[0]}/" if (p := GLOBUS_CONFIG['flow']['destination_base_path']) is None else p
 
     # Get the Globus-compatible directory name where the triggering file is stored.
     event_folder = os.path.dirname(event_file)

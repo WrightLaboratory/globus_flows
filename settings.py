@@ -113,7 +113,7 @@ if (setting := os.getenv('GLOBUS_REMOTE_ID')) is not None:
     GLOBUS_CONFIG['flow']['input']['destination']['id'] = setting
 
 if (setting := os.getenv('GLOBUS_DST_BASEPATH')) is not None:
-    GLOBUS_CONFIG['flow']['input']['destination']['path'] = setting
+    GLOBUS_CONFIG['flow']['destination_base_path'] = setting
 
 # Initilialize logger
 

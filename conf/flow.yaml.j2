@@ -18,7 +18,9 @@ flow:
     scope: 
     tags:
         - Trigger_Tutorial
-
+    
+    destination_base_path: {{ destination_base_path }}
+    
     input:
         # transfer_files parameter values
         source:
@@ -26,7 +28,7 @@ flow:
             path: {{ source_base_path }}
         destination:
             id: {{ destination_endpoint_id }}
-            path: {{ destination_base_path }}
+            path: 
         recursive_tx: false
         sync_level: 0
         verify_checksum: true
