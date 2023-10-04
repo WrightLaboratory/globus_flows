@@ -1,19 +1,35 @@
 """ The function below is used by the transfer-and-compute flow.
+It is based on the function `compute_function.py` given in
+https://github.com/globus/globus-flows-trigger-examples.
+
 In order to use it, you must first register it with the
 Globus Compute service, as described here:
 https://globus-compute.readthedocs.io/en/latest/Tutorial.html#registering-a-function
 (code is also provided below).
 
 This function generates thumbnail images for all PNG files in the
-source_dir and places them in result_path. Before invoking the function,
-ensure that you have the Pillow library (https://python-pillow.org)
-installed on your Globus Compute endpoint.
+source_dir and places them in result_path. It moves the source file to
+the result path after processing.
+
+Before invoking the function, ensure that you have the Pillow library
+(https://python-pillow.org) installed on your Globus Compute endpoint.
 """
 
 
 def process_images(source_dir=None, destination_dir=None):
-    if source_dir == None: return None
-    if destination_dir == None: return None
+    """
+    If no source_dir provided, the function exits returning a JSON string reporting nothing done.
+    If only source_dir is given, a subdirectory 'processed' will be created under it.
+    The resulting thumbnails and the original files will be placed in a YYYYmmdd subfolder of the 
+    destination_dir.
+    """
+    import json
+    results = {
+        "result": None,
+        "thumbnails_generated": []
+    }
+    if source_dir == None: return json.dumps(results)
+    destination_dir = source_dir if (dst := destination_dir) is None else dst
 
 
     from datetime import datetime
@@ -25,15 +41,19 @@ def process_images(source_dir=None, destination_dir=None):
 
 
     source_dir = Path(source_dir).expanduser().absolute()
-    destination_dir = Path(destination_dir).expanduser().absolute()
+
+    destination_dir = source_dir.joinpath('processed') if (
+        d :=  Path(destination_dir).expanduser().absolute()) == source_dir else d
 
     paths = chain(
         source_dir.glob('*.png'),
-        source_dir.glob('*.jpeg'),
+        source_dir.glob('*.jpg'),
         source_dir.glob('*.jpeg')
     )
 
     image_files = (p for p in paths if p.is_file())
+
+    thumbnails_generated = []
 
     for img_file in image_files:
         image = Image.open(img_file)
@@ -56,8 +76,18 @@ def process_images(source_dir=None, destination_dir=None):
         image.thumbnail(size=(x_dim, y_dim))
 
         processed_img = result_path.joinpath(f"thumb_{x_dim}x{y_dim}_{img_file.name}")
+        processed_img = result_path.joinpath(f"{img_file.stem}_{x_dim}x{y_dim}{img_file.suffix}")
         # Save thumbnail image
         image.save(processed_img)
+        
+        # mv original to destination to prevent reprocessing
+        img_file.rename(processed_img.parent.joinpath(f"{img_file.name}"))
+        thumbnails_generated.append(str(processed_img))
+
+    return json.dumps({
+        "result": "success",
+        "thumbnails_generated": thumbnails_generated
+    })
 
 
 """Code to register the function with the Globus Compute service
