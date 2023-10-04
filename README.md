@@ -4,7 +4,7 @@ This repository demonstrates how to create Python-based, native applications for
 
 It will require the following:
 
-* Python 3.11
+* Python 3.10
 * [Globus Python SDK v3](https://globus-sdk-python.readthedocs.io/en/stable/)
 * An existing Globus collection to which you have access
 * [Globus Connect Personal](https://www.globus.org/globus-connect-personal)
@@ -258,7 +258,7 @@ options:
                         JSON file or inline JSON input schema to create flow
 ```
 
-## Example File Transfer Flow
+## Example: File Transfer Flow
 
 This code has been adapted from the example provided at [d](https://globus.net).
 
@@ -391,3 +391,89 @@ You may stop monitoring by entering [⌃ control] + C at the keyboard.
 
 [N.B., the completion of the file transfer flow will not be returned.
 A possible modification would be to create a polling loop to determine the state of the asynchronous flow execution.]
+
+## Example: File Transfer and Compute Flow
+
+Begin by cloning this repository:
+
+```bash
+git clone https://github.com/WrightLaboratory/globus_flows.git
+cd globus_flows
+
+pyenv install $(cat .python-version)
+
+python -m venv .venv
+source ./.venv/bin/activate
+
+pip install -U pip
+pip install -r requirements.txt
+
+globus-compute-endpoint configure --display-name 'process_images' 'process_images_endpoint'
+globus-compute-endpoint start process_images_endpoint
+```
+
+Output
+
+```bash
+Please authenticate with Globus here:
+------------------------------------
+https://auth.globus.org/v2/oauth2/authorize?client_id=4cf29807-cf21-49ec-9443-ff9a3fb9f81c&redirect_uri=https%3A%2F%2Fauth.globus.org%2Fv2%2Fweb%2Fauth-code&scope=https%3A%2F%2Fauth.globus.org%2Fscopes%2Ffacd7ccc-c5f4-42aa-916b-a0e270e2c2a9%2Fall+openid&state=_default&response_type=code&code_challenge=kV35czw_m5bNhzuM31OJh7tVFKoyduwshIi103Xj1Zo&code_challenge_method=S256&access_type=offline&prefill_named_grant=spinup-0023e3.spinup.yale.edu&prompt=login
+------------------------------------
+
+Enter the resulting Authorization Code here:
+```
+
+```bash
+Starting endpoint; registered ID: 6f3d81f2-9040-4a43-9291-1474ff5a834b
+```
+
+```bash
+python gcf_process_images.py
+Registered 'process_images' function with ID c6796660-b935-4b08-a75d-888d3a8f1b93
+```
+
+```bash
+# Client
+# Prepare like endpoint
+
+# invoke interpreter
+python
+```
+
+```python
+from globus_compute_sdk import Client
+gcc = Client()
+```
+
+```python
+Please authenticate with Globus here:
+------------------------------------
+https://auth.globus.org/v2/oauth2/authorize?client_id=4cf29807-cf21-49ec-9443-ff9a3fb9f81c&redirect_uri=https%3A%2F%2Fauth.globus.org%2Fv2%2Fweb%2Fauth-code&scope=https%3A%2F%2Fauth.globus.org%2Fscopes%2Ffacd7ccc-c5f4-42aa-916b-a0e270e2c2a9%2Fall+openid&state=_default&response_type=code&code_challenge=e40QhbHP_BZPmi8zpoJLOzj9nAvQb5v8_5dHXBz-Uqg&code_challenge_method=S256&access_type=offline&prefill_named_grant=spinup-0023e8.spinup.yale.edu&prompt=login
+------------------------------------
+
+Enter the resulting Authorization Code here:
+```
+
+```bash
+mkdir -p ~/images
+cp globus_flows/assets/*.jpeg ~/images
+```
+
+```python
+func_id = '{{ function_id_from_gcc_endpoint_created_earlier }}'
+endpnt_id = '{{ gcc_endpoint_created_earlier }}
+
+src_dir = '~/images'
+
+taskid = gcc.run(src_dir, endpoint_id=endpnt_id, function_id=func_id)
+
+gcc.get_result(task_id)
+```
+
+This should return something similar to the following:
+
+```python
+'{"result": "success", "thumbnails_generated": ["/path/to/images/processed/20230630/IMG_2609_200x200.jpeg"]}'
+```
+
+You may verify that original and its thumbnail are in the  `~/images/processed/20230630/` directory on the endpoint.
