@@ -319,20 +319,17 @@ You also may override the settings in `~/.config/globus/flow/.flow.yaml` with an
 The `trigger_transfer_flow.py` script uses the `watchdog` package to monitor the file path on the source endpoint (in this case, the Globus Connect Personal client) for changes in `GLOBUS_SRC_BASEPATH`.
 
 The `watch.py` script may be modified to change how file system events or file types are handled.
-In this example, the creation of a new `*.txt` file will trigger an immediate transfer from the source endpoint to the destination endpoint.
-The creation of a `*.dat` file will sleep for 5 minutes before triggering the flow.
-This assumes that a `*.dat` file is a file created by an instrument process.
-The 5 minute delay accounts for final write processes.
-[A better implementation could be to check the file mode.
-If the file is still in `append` mode, sleep for 5 seconds.
-Once the file is closed, the event should trigger.]
+
+In this example, the creation of a new `.txt` or `.dat` file will trigger the flow transferring the file from the source endpoint to the destination endpoint.
+(N.B., the file transfer will not run immediately on file creation.
+The script will begin polling this newly created file every 5 seconds after creation to ensure that any open file handles to that file are closed before initiating the tranfer.)
 
 ```bash
 # Create the 'instrument_data' folder
 mkdir -p "${GLOBUS_SRC_BASEPATH}"
 
 chmod +x ./trigger_transfer_flow.py
-./trigger_transfer_flow.py --extensions '.txt' '.jpeg' '.jpg' '.dat'
+./trigger_transfer_flow.py --extensions '.txt' '.dat'
 ```
 
 You will be presented with another login URL.
@@ -347,11 +344,11 @@ Please enter the code here:
 
 In order to execute the flow on your behalf, the native app client must request additional scopes to start and manage the "Transfer Flow Demo" flow.
 
-Once authorized, the script will continue to monitor the `GLOBUS_SRC_BASEPATH` directory
+Once authorized, the script will begin monitoring the `GLOBUS_SRC_BASEPATH` directory and display the following log entries to standard output:
 
 ```bash
-{"message": "Watcher Started\n", "logger": "watch", "level": "info", "timestamp": "2023-09-26T15:36:33Z"}
-{"message": "Monitoring: ~/instrument_data/\n", "logger": "watch", "level": "info", "timestamp": "2023-09-26T15:36:33Z"}
+{"message": "Watcher Started", "logger": "watch", "level": "info", "timestamp": "2023-10-05T13:56:39Z"}
+{"message": "Monitoring: /path/to/instrument_data/", "logger": "watch", "level": "info", "timestamp": "2023-10-05T13:56:39Z"}
 ```
 
 ### Simulate Data Acquisition
@@ -361,6 +358,7 @@ Create a new data file.
 
 ```bash
 export GLOBUS_SRC_BASEPATH=~/instrument_data
+mkdir -p "${GLOBUS_SRC_BASEPATH}"
 
 tee "${GLOBUS_SRC_BASEPATH}/$(date +%s).txt"<<'EOF'
 "x","y"
@@ -371,22 +369,26 @@ tee "${GLOBUS_SRC_BASEPATH}/$(date +%s).txt"<<'EOF'
 EOF
 ```
 
-Back in the terminal session running `trigger_transfer_flow.py`
-
-You should see the log entries similar to those below in standard out:
+Back in the terminal session running `trigger_transfer_flow.py`, you should see log entries similar to those below in standard out:
 
 ```bash
-{"message": "File created: 1695743343.txt", "logger": "watch", "level": "info", "timestamp": "2023-09-26T15:49:03Z"}
-{"message": "File ends with .txt", "logger": "watch", "level": "info", "timestamp": "2023-09-26T15:49:03Z"}
-{"message": "Starting flow...", "logger": "watch", "level": "info", "timestamp": "2023-09-26T15:49:03Z"}
-{"message": "Transferring: instrument_data", "logger": "watch", "level": "info", "timestamp": "2023-09-26T15:49:03Z"}
-{"message": "https://app.globus.org/runs/04ef56d0-6f7b-4060-846f-800d5e3c4c42", "logger": "watch", "level": "info", "timestamp": "2023-09-26T15:49:03Z"}
+{"message": "File created: 1696514203.txt", "logger": "watch", "level": "info", "timestamp": "2023-10-05T13:56:43Z"}
+{"message": "File ends with .txt", "logger": "watch", "level": "info", "timestamp": "2023-10-05T13:56:43Z"}
+{"message": "Starting flow...", "logger": "watch", "level": "info", "timestamp": "2023-10-05T13:56:44Z"}
+{"message": "source_path: /path/to/instrument_data/1696514203.txt", "logger": "watch", "level": "info", "timestamp": "2023-10-05T13:56:44Z"}
+{"message": "destination_path: /5bf2af69/instrument_data/1696514203.txt", "logger": "watch", "level": "info", "timestamp": "2023-10-05T13:56:44Z"}
+{"message": "Transferring /path/to/instrument_data/1696514203.txt", "logger": "watch", "level": "info", "timestamp": "2023-10-05T13:56:44Z"}
+{"message": "View status at https://app.globus.org/runs/ba5b7509-0684-4362-b0ff-ce6c4fbf335b/logs", "logger": "watch", "level": "info", "timestamp": "2023-10-05T13:56:44Z"}
 ```
 
-You may stop monitoring by entering [⌃ control] + C at the keyboard.
+Note, in order to view status of transfer operation, you must visit the URL provided in the last log entry in the sample output.
+
+The run id in this url will differ for each newly created file.
+
+You may stop monitoring by entering **[⌃ control]** + **[C]** at the keyboard.
 
 ```bash
-^C{"message": "Watcher stopped.", "logger": "watch", "level": "info", "timestamp": "2023-09-26T15:53:44Z"}
+^C{"message": "Watcher stopped.", "logger": "watch", "level": "info", "timestamp": "2023-10-05T14:15:35"}
 ```
 
 [N.B., the completion of the file transfer flow will not be returned.
