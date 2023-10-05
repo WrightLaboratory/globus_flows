@@ -90,8 +90,8 @@ def run_flow(event_file):
         label=flow_label,
         tags=["Trigger_Tutorial"]
     )
-    LOGGER.info(f"Transferring: {event_folder_name}")
-    LOGGER.info(f"https://app.globus.org/runs/{response['run_id']}")
+    LOGGER.info(f"Transferring {event_file}")
+    LOGGER.info(f"View status at https://app.globus.org/runs/{response['run_id']}/logs")
 
 
 # Parse input arguments
