@@ -36,7 +36,7 @@ class FileTrigger:
         self.FlowRunner = FlowRunner
 
     def run(self):
-        LOGGER.info("Watcher Started\n")
+        LOGGER.info("Watcher Started")
 
         if not self.FlowRunner:
             LOGGER.info("No callback function defined for events.")
@@ -49,7 +49,7 @@ class FileTrigger:
             LOGGER.info("Directory " + self.watch_dir + " was created")
 
         os.chdir(self.watch_dir)
-        LOGGER.info(f"Monitoring: {self.watch_dir}\n")
+        LOGGER.info(f"Monitoring: {self.watch_dir}")
 
         event_handler = Handler(self.FlowRunner, self.patterns)
         self.observer.schedule(event_handler, self.watch_dir, recursive=True)
