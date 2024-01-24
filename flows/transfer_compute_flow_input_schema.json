@@ -49,7 +49,7 @@
           "type": "string"
         }
       },
-      "description": "The destination collection and path (path MUST end with a slash); default collection is 'Globus Tutorials on ALCF Eagle'",
+      "description": "The destination collection and path (path MUST end with a slash)",
       "propertyOrder": [
         "id",
         "path"
