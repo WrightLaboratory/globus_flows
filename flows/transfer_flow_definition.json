@@ -4,7 +4,7 @@
       "End": true,
       "Type": "Action",
       "Comment": "Transfer files",
-      "WaitTime": 600,
+      "WaitTime": 30,
       "ActionUrl": "https://actions.automate.globus.org/transfer/transfer",
       "Parameters": {
         "sync_level.$": "$.input.sync_level",
@@ -22,6 +22,6 @@
       "ResultPath": "$.TransferFiles"
     }
   },
-  "Comment": "Transfer and process files by invoking a Globus Compute function",
+  "Comment": "Transfer files between Globus endpoints",
   "StartAt": "TransferFiles"
 }
