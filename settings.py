@@ -33,7 +33,10 @@ __CONFIGS__ = {
     'source_endpoint_id' : os.getenv('GLOBUS_LOCAL_ID', ''),
     'source_base_path' : os.getenv('GLOBUS_SRC_BASEPATH', ''),
     'destination_endpoint_id' : os.getenv('GLOBUS_REMOTE_ID', ''),
-    'destination_base_path' : os.getenv('GLOBUS_DST_BASEPATH', '')
+    'destination_base_path' : os.getenv('GLOBUS_DST_BASEPATH', ''),
+    'compute_endpoint_id': os.getenv('GLOBUS_COMPUTE_ENDPOINT', ''),
+    'compute_function_id': os.getenv('GLOBUS_COMPUTE_FUNCID' , ''),
+    'compute_function_kwargs': os.getenv('GLOBUS_COMPUTE_KWARGS' , '')
 }
 
 
@@ -115,6 +118,16 @@ if (setting := os.getenv('GLOBUS_REMOTE_ID')) is not None:
 if (setting := os.getenv('GLOBUS_DST_BASEPATH')) is not None:
     GLOBUS_CONFIG['flow']['destination_base_path'] = setting
 
+# Globus compute action input values
+if (setting := os.getenv('GLOBUS_COMPUTE_ENDPOINT')) is not None:
+    GLOBUS_CONFIG['flow']['input']['compute_endpoint_id'] = setting
+
+if (setting := os.getenv('GLOBUS_COMPUTE_FUNCID')) is not None:
+    GLOBUS_CONFIG['flow']['input']['compute_function_id'] = setting
+
+if (setting := os.getenv('GLOBUS_COMPUTE_KWARGS')) is not None:
+    GLOBUS_CONFIG['flow']['input']['compute_function_kwargs'] = setting
+    
 # Initilialize logger
 
 # Expand any ~ components in path
